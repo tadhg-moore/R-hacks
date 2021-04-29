@@ -4,7 +4,8 @@ pacman::p_load(shiny, vroom, ggplot2, plotly)
 ui <- fluidPage(
   fileInput(inputId = "upload", "Upload file"),
   radioButtons("header", "Header", choices = c("True", "False"), inline = TRUE),
-  radioButtons("p_type", "Plot type", choices = c("Point", "Line")),
+  radioButtons("p_type", "Plot type", choices = c("Point", "Line"), inline = TRUE),
+  uiOutput("x_var_sel"),
   uiOutput("y_var_sel"),
   uiOutput("color_sel"),
   h3("Plot"),
@@ -23,7 +24,11 @@ server <- function(input, output, session) {
   
   output$y_var_sel <- renderUI({
     req(!is.null(df$df))
-    selectInput("y_var", "Choose variable", choices = colnames(df$df))
+    selectInput("y_var", "Choose Y variable", choices = colnames(df$df), selected = colnames(df$df)[2])
+  })
+  output$x_var_sel <- renderUI({
+    req(!is.null(df$df))
+    selectInput("x_var", "Choose X variable", choices = colnames(df$df))
   })
   output$color_sel <- renderUI({
     req(!is.null(df$df))
@@ -40,12 +45,12 @@ server <- function(input, output, session) {
     p <- ggplot(df$df)
     if(input$p_type == "Point") {
       p <- p +
-        {if(input$color == "None") geom_point(aes_string(names(df$df[1]), input$y_var))} +
-        {if(input$color != "None") {geom_point(aes_string(names(df$df[1]), input$y_var, color = input$color))}} +
+        {if(input$color == "None") geom_point(aes_string(input$x_var, input$y_var))} +
+        {if(input$color != "None") {geom_point(aes_string(input$x_var, input$y_var, color = input$color))}} +
         {if(input$color != "None") {scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(11, "Spectral")))}}
     } else if( input$p_type == "Line") {
       p <- p + 
-        geom_line(aes_string(names(df$df[1]), input$y_var))
+        geom_line(aes_string(input$x_var, input$y_var))
     }
     p <- p +
       theme_classic()
