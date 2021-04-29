@@ -9,7 +9,8 @@ ui <- fluidPage(
   uiOutput("y_var_sel"),
   uiOutput("color_sel"),
   h3("Plot"),
-  plotlyOutput("p1")
+  plotlyOutput("p1"),
+  verbatimTextOutput("sum_stats")
 )
 
 server <- function(input, output, session) {
@@ -55,6 +56,11 @@ server <- function(input, output, session) {
     p <- p +
       theme_classic()
       ggplotly(p, dynamicTicks = TRUE)
+  })
+  
+  output$sum_stats <- renderPrint({
+    req(!is.null(df$df))
+    summary(df$df)
   })
   
 }
